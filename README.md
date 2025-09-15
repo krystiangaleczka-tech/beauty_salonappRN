@@ -149,7 +149,7 @@ Nasz projekt wykorzystuje architekturę monorepo, co pozwala na:
 
 ### Dla Personelu
 - Personalny harmonogram pracy
-- Historia klientów i ich preferencje
+- Historia klientów i ich preferencji
 - System powiadomień o nowych rezerwacjach
 - Mobilny interfejs do zarządzania wizytami
 
@@ -216,7 +216,28 @@ npm run test:api
 
 ## 📄 Licencja
 
-[Dodaj informacje o licencji]
+### MIT License
+
+Copyright (c) 2025 Beauty Salon App
+
+Udzielono niniejszym zgody, bezpłatnie, każdej osobie, która uzyska kopię tego oprogramowania i powiązanych plików dokumentacji („Oprogramowanie”), do korzystania z Oprogramowania bez ograniczeń, w tym bez ograniczeń praw do używania, kopiowania, modyfikowania, łączenia, publikowania, dystrybuowania, sublicencjonowania i/lub sprzedawania kopii Oprogramowania, oraz do zezwalania osobom, którym Oprogramowanie jest dostarczone, na wykonywanie powyższych, pod następującymi warunkami:
+
+Powyższe powiadomienie o prawach autorskich oraz to powiadomienie o zezwoleniu muszą być zawarte we wszystkich kopiach lub istotnych częściach Oprogramowania.
+
+OPROGRAMOWANIE JEST DOSTARCZANE W FORMIE „JAK JEST”, BEZ JAKIEJKOLWIEK GWARANCJI, WYRAŹNEJ LUB DOROZUMIANEJ, W TYM MIĘDZY INNYMI GWARANCJI PRZYDATNOŚCI HANDLOWEJ, PRZYDATNOŚCI DO OKREŚLONEGO CELU ORAZ NARUSZANIA PRAW. W ŻADNYM WYPADKU AUTORZY LUB POSIADACZE PRAW AUTORSKICH NIE PONOSZĄ ODPOWIEDZIALNOŚCI ZA JAKIEKOLWIE ROSZCZENIA, SZKODY LUB INNE OBIĄZKI, CZY TO W ZWIĄZKU Z UMOWĄ, CZY Z DELIKTEM, CZY INNIE, WYNIKAJĄCE Z OPROGRAMOWANIA LUB UŻYCIA LUB INNYCH DZIAŁAŃ W OPROGRAMOWANIU.
+
+### Wyjaśnienie licencji w języku polskim
+
+Niniejsze oprogramowanie jest udostępnione na licencji MIT, co oznacza, że:
+
+1. **Możesz swobodnie korzystać z oprogramowania** - bez ograniczeń, w tym w celach komercyjnych.
+2. **Możesz modyfikować oprogramowanie** - dostosowując je do swoich potrzeb.
+3. **Możesz dystrybuować oprogramowanie** - udostępniając je innym.
+4. **Możesz używać oprogramowania w zamkniętych projektach** - nie musisz udostępniać swoich modyfikacji.
+
+Jedynym warunkiem jest zachowanie powiadomienia o prawach autorskich oraz niniejszego zezwolenia we wszystkich kopiach lub istotnych częściach oprogramowania.
+
+Oprogramowanie jest dostarczane w formie „jak jest”, bez jakichkolwiek gwarancji. Autorzy nie ponoszą odpowiedzialności za szkody wynikające z jego użycia.
 
 ***
 
