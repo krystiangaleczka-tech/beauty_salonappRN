@@ -1,12 +1,14 @@
 import sql from '@/app/api/utils/sql';
+import { withAuth } from '@/app/api/utils/authMiddleware';
 
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
     const url = new URL(request.url);
-    const userId = url.searchParams.get('user_id');
+    const userId = url.searchParams.get('user_id') || request.user.id;
 
-    if (!userId) {
-      return Response.json({ error: 'User ID is required' }, { status: 400 });
+    // Users can only view their own availability unless they're admin
+    if (userId !== request.user.id && !request.user.isAdmin) {
+      return Response.json({ error: 'Forbidden: You can only view your own availability' }, { status: 403 });
     }
 
     const availability = await sql`
@@ -43,11 +45,16 @@ export async function GET(request) {
     console.error('Error fetching availability:', error);
     return Response.json({ error: 'Failed to fetch availability' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
     const { user_id, availability } = await request.json();
+
+    // Users can only update their own availability unless they're admin
+    if (user_id !== request.user.id && !request.user.isAdmin) {
+      return Response.json({ error: 'Forbidden: You can only update your own availability' }, { status: 403 });
+    }
 
     if (!user_id || !availability) {
       return Response.json({ error: 'User ID and availability data are required' }, { status: 400 });
@@ -89,4 +96,4 @@ export async function POST(request) {
     console.error('Error updating availability:', error);
     return Response.json({ error: 'Failed to update availability' }, { status: 500 });
   }
-}
+});

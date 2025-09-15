@@ -1,7 +1,8 @@
 import sql from "@/app/api/utils/sql";
+import { withAuth } from "@/app/api/utils/authMiddleware";
 
 // GET - List bookings with optional filters
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
     const url = new URL(request.url);
     const date = url.searchParams.get('date');
@@ -20,6 +21,13 @@ export async function GET(request) {
     
     const params = [];
     let paramCount = 0;
+    
+    // If user is not admin, only show their own bookings
+    if (!request.user.isAdmin) {
+      paramCount++;
+      query += ` AND b.user_id = $${paramCount}`;
+      params.push(request.user.id);
+    }
     
     if (date) {
       paramCount++;
@@ -42,12 +50,12 @@ export async function GET(request) {
     console.error('Error fetching bookings:', error);
     return Response.json({ error: 'Failed to fetch bookings' }, { status: 500 });
   }
-}
+});
 
 // POST - Create new booking
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
-    const { user_id, service_id, booking_date, start_time, notes } = await request.json();
+    const { service_id, booking_date, start_time, notes } = await request.json();
     
     if (!service_id || !booking_date || !start_time) {
       return Response.json({ error: 'Service, date, and time are required' }, { status: 400 });
@@ -67,7 +75,7 @@ export async function POST(request) {
     
     const booking = await sql`
       INSERT INTO bookings (user_id, service_id, booking_date, start_time, notes)
-      VALUES (${user_id || 'demo-user'}, ${service_id}, ${booking_date}, ${start_time}, ${notes})
+      VALUES (${request.user.id}, ${service_id}, ${booking_date}, ${start_time}, ${notes})
       RETURNING *
     `;
     
@@ -76,4 +84,4 @@ export async function POST(request) {
     console.error('Error creating booking:', error);
     return Response.json({ error: 'Failed to create booking' }, { status: 500 });
   }
-}
+});
