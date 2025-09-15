@@ -43,7 +43,6 @@ This task list tracks the development progress of the CreateXYZ project, a monor
 #### 2.4 Booking Flow Implementation #priority
 - 2.4.1 [x] Create booking form UI
 - 2.4.2 [ ] Implement date/time selection
-- 2.4.3 [ ] Add payment integration
 - 2.4.4 [ ] Connect to booking API
 
 #### 2.5 Authentication Flow #priority

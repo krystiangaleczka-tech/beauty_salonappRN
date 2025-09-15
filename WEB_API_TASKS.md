@@ -1,7 +1,7 @@
 # Web App & API Development Tasks
 
 ## 📋 Overview
-**Progress:** 45% complete  
+**Progress:** 50% complete  
 
 This document tracks the development tasks for the web application (Vite/React) and API endpoints of the CreateXYZ project.
 
@@ -64,14 +64,19 @@ This document tracks the development tasks for the web application (Vite/React) 
 #### 3.3 Bookings Endpoints #priority
 - 3.3.1 [x] Create basic structure
 - 3.3.2 [x] Implement GET for single booking
-- 3.3.3 [ ] Add POST for booking creation
-- 3.3.4 [ ] Implement PUT for booking updates
-- 3.3.5 [ ] Add DELETE for booking cancellation
+- 3.3.3 [x] Add POST for booking creation
+- 3.3.4 [x] Implement PUT for booking updates
+- 3.3.5 [x] Add DELETE for booking cancellation
 
-#### 3.4 Availability Endpoints
-- 3.4.1 [x] Create basic availability endpoint
-- 3.4.2 [ ] Implement calendar availability
-- 3.4.3 [ ] Add Google Calendar sync
+#### 3.4 Authentication Endpoints
+- 3.4.1 [x] Create authentication middleware
+- 3.4.2 [x] Implement token refresh endpoint
+- 3.4.3 [x] Add user profile endpoint (/api/user/profile)
+
+#### 3.5 Availability Endpoints
+- 3.5.1 [x] Create basic availability endpoint
+- 3.5.2 [ ] Implement calendar availability
+- 3.5.3 [ ] Add Google Calendar sync
 
 ### 4.0 Testing
 #### 4.1 Unit Testing
@@ -113,3 +118,5 @@ This document tracks the development tasks for the web application (Vite/React) 
 - PostgreSQL with `pg` connector, fallback to mock data
 - Many web API files use `@/app/...` aliased pathing
 - Server-side filtering implemented in `apps/web/src/app/api/services/route.js`
+- Added authentication middleware in `apps/web/src/app/api/utils/authMiddleware.js`
+- Added user profile endpoint at `/api/user/profile` with authentication

@@ -1,7 +1,7 @@
 # Mobile App Development Tasks
 
 ## 📋 Overview
-**Progress:** 50% complete  
+**Progress:** 55% complete  
 
 This document tracks the development tasks specifically for the mobile app (Expo/React Native) portion of the CreateXYZ project.
 
@@ -53,10 +53,10 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 2.3.3.4 [x] Add token validation
 
 ##### 2.3.4 User Management
-- 2.3.4.1 [ ] Create useUser hook for current user retrieval
+- 2.3.4.1 [x] Create useUser hook for current user retrieval
 - 2.3.4.2 [x] Set up basic hook structure
-- 2.3.4.3 [ ] Add caching mechanism
-- 2.3.4.4 [ ] Implement user profile fetching
+- 2.3.4.3 [x] Add caching mechanism
+- 2.3.4.4 [x] Implement user profile fetching
 
 #### 2.4 Booking Flow Implementation #priority
 ##### 2.4.1 Booking Screen
@@ -121,6 +121,7 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 3.3.3 [x] Add token refresh
 - 3.3.4 [x] Implement secure storage
 - 3.3.5 [x] Add authentication middleware
+- 3.3.6 [x] Add user profile endpoint (/api/user/profile)
 
 ### 4.0 Testing
 #### 4.1 Unit Testing
@@ -176,3 +177,5 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - All API endpoints are now protected with authentication middleware
 - Added PUT and DELETE methods for booking management
 - Added token refresh endpoint at `/api/auth/refresh`
+- Added user profile endpoint at `/api/user/profile` with caching mechanism
+- Implemented user data clearing on sign out and token refresh failure

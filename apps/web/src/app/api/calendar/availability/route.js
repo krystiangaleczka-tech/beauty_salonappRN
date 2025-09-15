@@ -1,111 +1,139 @@
-import sql from "@/app/api/utils/sql";
+import sql from '@/app/api/utils/sql';
+import { withAuth } from '@/app/api/utils/authMiddleware';
 
-// GET - Check available time slots for a specific date
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
     const url = new URL(request.url);
     const date = url.searchParams.get('date');
     const serviceId = url.searchParams.get('service_id');
     
     if (!date) {
-      return Response.json({ error: 'Date is required' }, { status: 400 });
+      return Response.json({ error: 'Date parameter is required' }, { status: 400 });
     }
     
-    // Get business hours
-    const businessSettings = await sql`
-      SELECT opening_hours FROM business_settings LIMIT 1
-    `;
-    
-    const openingHours = businessSettings[0]?.opening_hours || {};
-    
-    // Get day of week (0 = Sunday, 1 = Monday, etc.)
-    const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const dayHours = openingHours[dayName];
-    
-    if (!dayHours || dayHours.closed) {
-      return Response.json({ availableSlots: [] });
+    if (!serviceId) {
+      return Response.json({ error: 'Service ID parameter is required' }, { status: 400 });
     }
     
-    // Get existing bookings for the date
-    const existingBookings = await sql`
-      SELECT start_time, duration_minutes 
-      FROM bookings b
-      JOIN services s ON b.service_id = s.id
-      WHERE booking_date = ${date} 
-      AND status != 'cancelled'
+    // Get service details to check duration
+    const serviceResult = await sql`
+      SELECT duration_minutes, price 
+      FROM services 
+      WHERE id = ${serviceId}
     `;
     
-    // Get service duration if specified
-    let serviceDuration = 60; // default
-    if (serviceId) {
-      const service = await sql`
-        SELECT duration_minutes FROM services WHERE id = ${serviceId}
-      `;
-      if (service[0]) {
-        serviceDuration = service[0].duration_minutes;
+    if (serviceResult.length === 0) {
+      return Response.json({ error: 'Service not found' }, { status: 404 });
+    }
+    
+    const service = serviceResult[0];
+    const durationMinutes = service.duration_minutes;
+    
+    // Get day of week from date (0 = Sunday, 1 = Monday, etc.)
+    const dateObj = new Date(date);
+    const dayOfWeek = dateObj.getDay();
+    
+    // Get availability settings for this day of week
+    const availabilityResult = await sql`
+      SELECT start_time, end_time, is_available
+      FROM availability_settings
+      WHERE user_id = ${request.user.id} AND day_of_week = ${dayOfWeek}
+    `;
+    
+    // If no availability settings for this day, use default (9-5, closed Sunday)
+    let startTime = '09:00:00';
+    let endTime = '17:00:00';
+    let isAvailable = dayOfWeek !== 0; // Closed on Sunday
+    
+    if (availabilityResult.length > 0) {
+      const availability = availabilityResult[0];
+      startTime = availability.start_time;
+      endTime = availability.end_time;
+      isAvailable = availability.is_available;
+    }
+    
+    // If not available for this day, return empty slots
+    if (!isAvailable || !startTime || !endTime) {
+      return Response.json({ 
+        availableSlots: [],
+        datesWithAvailability: [{ date, availability: 'none' }]
+      });
+    }
+    
+    // Generate time slots based on availability and service duration
+    const availableSlots = [];
+    const startHour = parseInt(startTime.split(':')[0]);
+    const startMinute = parseInt(startTime.split(':')[1]);
+    const endHour = parseInt(endTime.split(':')[0]);
+    const endMinute = parseInt(endTime.split(':')[1]);
+    
+    // Convert to minutes for easier calculation
+    const totalStartMinutes = startHour * 60 + startMinute;
+    const totalEndMinutes = endHour * 60 + endMinute;
+    
+    // Get existing bookings for this date
+    const bookingsResult = await sql`
+      SELECT start_time, end_time
+      FROM bookings
+      WHERE 
+        user_id = ${request.user.id} AND 
+        booking_date = ${date} AND
+        status NOT IN ('cancelled', 'completed')
+    `;
+    
+    // Generate slots in 30-minute intervals (or service duration if longer)
+    const slotInterval = Math.max(30, durationMinutes);
+    
+    for (let minutes = totalStartMinutes; minutes + durationMinutes <= totalEndMinutes; minutes += slotInterval) {
+      const slotHour = Math.floor(minutes / 60);
+      const slotMinute = minutes % 60;
+      const slotEndTime = minutes + durationMinutes;
+      const slotEndHour = Math.floor(slotEndTime / 60);
+      const slotEndMinute = slotEndTime % 60;
+      
+      // Format time as HH:MM
+      const slotTime = `${slotHour.toString().padStart(2, '0')}:${slotMinute.toString().padStart(2, '0')}`;
+      const slotEnd = `${slotEndHour.toString().padStart(2, '0')}:${slotEndMinute.toString().padStart(2, '0')}`;
+      
+      // Check if this slot conflicts with existing bookings
+      const isSlotAvailable = !bookingsResult.some(booking => {
+        const bookingStartHour = parseInt(booking.start_time.split(':')[0]);
+        const bookingStartMinute = parseInt(booking.start_time.split(':')[1]);
+        const bookingEndHour = parseInt(booking.end_time.split(':')[0]);
+        const bookingEndMinute = parseInt(booking.end_time.split(':')[1]);
+        
+        const bookingStartMinutes = bookingStartHour * 60 + bookingStartMinute;
+        const bookingEndMinutes = bookingEndHour * 60 + bookingEndMinute;
+        
+        // Check for overlap
+        return (
+          (minutes >= bookingStartMinutes && minutes < bookingEndMinutes) ||
+          (slotEndTime > bookingStartMinutes && slotEndTime <= bookingEndMinutes) ||
+          (minutes <= bookingStartMinutes && slotEndTime >= bookingEndMinutes)
+        );
+      });
+      
+      if (isSlotAvailable) {
+        availableSlots.push(slotTime);
       }
     }
     
-    // Generate available time slots
-    const availableSlots = generateTimeSlots(
-      dayHours.open,
-      dayHours.close,
-      serviceDuration,
-      existingBookings
-    );
+    // Determine availability level for this date
+    let availabilityLevel = 'high';
+    if (availableSlots.length === 0) {
+      availabilityLevel = 'none';
+    } else if (availableSlots.length < 3) {
+      availabilityLevel = 'low';
+    } else if (availableSlots.length < 6) {
+      availabilityLevel = 'limited';
+    }
     
-    return Response.json({ availableSlots });
-  } catch (error) {
-    console.error('Error checking availability:', error);
-    return Response.json({ error: 'Failed to check availability' }, { status: 500 });
-  }
-}
-
-function generateTimeSlots(openTime, closeTime, serviceDuration, existingBookings) {
-  const slots = [];
-  const openHour = parseInt(openTime.split(':')[0]);
-  const openMinute = parseInt(openTime.split(':')[1]);
-  const closeHour = parseInt(closeTime.split(':')[0]);
-  const closeMinute = parseInt(closeTime.split(':')[1]);
-  
-  let currentHour = openHour;
-  let currentMinute = openMinute;
-  
-  while (currentHour < closeHour || (currentHour === closeHour && currentMinute < closeMinute)) {
-    const timeSlot = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-    
-    // Check if this slot conflicts with existing bookings
-    const isAvailable = !existingBookings.some(booking => {
-      const bookingStart = booking.start_time;
-      const bookingDuration = booking.duration_minutes;
-      
-      // Convert time to minutes for easier comparison
-      const slotMinutes = currentHour * 60 + currentMinute;
-      const bookingStartMinutes = parseInt(bookingStart.split(':')[0]) * 60 + parseInt(bookingStart.split(':')[1]);
-      const bookingEndMinutes = bookingStartMinutes + bookingDuration;
-      const slotEndMinutes = slotMinutes + serviceDuration;
-      
-      // Check for overlap
-      return (slotMinutes < bookingEndMinutes && slotEndMinutes > bookingStartMinutes);
+    return Response.json({ 
+      availableSlots,
+      datesWithAvailability: [{ date, availability: availabilityLevel }]
     });
-    
-    if (isAvailable) {
-      // Make sure the service can finish before closing time
-      const slotEndMinutes = (currentHour * 60 + currentMinute) + serviceDuration;
-      const closeMinutes = closeHour * 60 + closeMinute;
-      
-      if (slotEndMinutes <= closeMinutes) {
-        slots.push(timeSlot);
-      }
-    }
-    
-    // Move to next 30-minute slot
-    currentMinute += 30;
-    if (currentMinute >= 60) {
-      currentMinute = 0;
-      currentHour += 1;
-    }
+  } catch (error) {
+    console.error('Error fetching calendar availability:', error);
+    return Response.json({ error: 'Failed to fetch availability' }, { status: 500 });
   }
-  
-  return slots;
-}
+});

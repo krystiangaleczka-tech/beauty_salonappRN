@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, Calendar as CalendarIcon, Clock } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
   Inter_400Regular,
@@ -21,9 +21,9 @@ import {
 } from "@expo-google-fonts/inter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { Calendar } from "react-native-calendars";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import DateTimeSelector from "../components/DateTimeSelector";
 
 export default function BookServiceScreen() {
   const insets = useSafeAreaInsets();
@@ -45,18 +45,31 @@ export default function BookServiceScreen() {
   });
 
   // Get available time slots for selected date
-  const { data: availabilityData, isLoading: isLoadingSlots } = useQuery({
+  const { data: availabilityData, isLoading: isLoadingSlots, error: availabilityError } = useQuery({
     queryKey: ['availability', selectedDate, service_id],
     queryFn: async () => {
       if (!selectedDate) return { availableSlots: [] };
       const response = await fetch(`/api/calendar/availability?date=${selectedDate}&service_id=${service_id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch availability');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch availability');
       }
       return response.json();
     },
     enabled: !!selectedDate,
+    retry: 1,
   });
+
+  // Show error alert if availability fetch fails
+  useEffect(() => {
+    if (availabilityError) {
+      Alert.alert(
+        'Error',
+        'Failed to load available time slots. Please try again later.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, [availabilityError]);
 
   // Get service details
   const { data: serviceData } = useQuery({
@@ -108,8 +121,8 @@ export default function BookServiceScreen() {
     return null;
   }
 
-  const handleDateSelect = (day) => {
-    setSelectedDate(day.dateString);
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
     setSelectedTime(''); // Reset selected time when date changes
   };
 
@@ -146,11 +159,6 @@ export default function BookServiceScreen() {
   const handleViewBookings = () => {
     router.push('/(tabs)/bookings');
   };
-
-  const today = new Date().toISOString().split('T')[0];
-  const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 30); // 30 days from now
-  const maxDateString = maxDate.toISOString().split('T')[0];
 
   // Render step indicators
   const renderStepIndicators = () => (
@@ -256,144 +264,15 @@ export default function BookServiceScreen() {
         showsVerticalScrollIndicator={false}
       >
         {currentStep === 1 && (
-          <>
-            {/* Calendar Section */}
-            <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                <CalendarIcon size={20} color="#C8A882" />
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontFamily: "Inter_600SemiBold",
-                    color: isDark ? "#FFFFFF" : "#5D4E37",
-                    marginLeft: 8,
-                  }}
-                >
-                  Select Date
-                </Text>
-              </View>
-
-              <Calendar
-                onDayPress={handleDateSelect}
-                markedDates={{
-                  [selectedDate]: {
-                    selected: true,
-                    selectedColor: "#C8A882",
-                  },
-                }}
-                minDate={today}
-                maxDate={maxDateString}
-                theme={{
-                  backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
-                  calendarBackground: isDark ? "#2A2A2A" : "#F9F5ED",
-                  textSectionTitleColor: isDark ? "#FFFFFF" : "#5D4E37",
-                  dayTextColor: isDark ? "#FFFFFF" : "#5D4E37",
-                  todayTextColor: "#C8A882",
-                  selectedDayBackgroundColor: "#C8A882",
-                  selectedDayTextColor: "#FFFFFF",
-                  monthTextColor: isDark ? "#FFFFFF" : "#5D4E37",
-                  arrowColor: "#C8A882",
-                  textDisabledColor: isDark ? "#666666" : "#D0C4A8",
-                }}
-                style={{
-                  borderRadius: 12,
-                  backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
-                  paddingVertical: 10,
-                }}
-              />
-            </View>
-
-            {/* Time Slots Section */}
-            {selectedDate && (
-              <View style={{ paddingHorizontal: 20, paddingTop: 30 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                  <Clock size={20} color="#C8A882" />
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontFamily: "Inter_600SemiBold",
-                      color: isDark ? "#FFFFFF" : "#5D4E37",
-                      marginLeft: 8,
-                    }}
-                  >
-                    Available Times
-                  </Text>
-                </View>
-
-                {isLoadingSlots ? (
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                    {Array.from({ length: 6 }).map((_, index) => (
-                      <View
-                        key={index}
-                        style={{
-                          backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
-                          borderRadius: 8,
-                          padding: 12,
-                          minWidth: 80,
-                          height: 40,
-                        }}
-                      />
-                    ))}
-                  </View>
-                ) : availabilityData?.availableSlots?.length > 0 ? (
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                    {availabilityData.availableSlots.map((time) => (
-                      <TouchableOpacity
-                        key={time}
-                        onPress={() => handleTimeSelect(time)}
-                        style={{
-                          backgroundColor: selectedTime === time 
-                            ? "#C8A882" 
-                            : isDark ? "#2A2A2A" : "#F9F5ED",
-                          borderWidth: 1,
-                          borderColor: selectedTime === time 
-                            ? "#C8A882" 
-                            : isDark ? "#3A3A3A" : "#E8DCC0",
-                          borderRadius: 8,
-                          padding: 12,
-                          minWidth: 80,
-                          alignItems: "center",
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            fontFamily: "Inter_500Medium",
-                            color: selectedTime === time 
-                              ? "#FFFFFF" 
-                              : isDark ? "#FFFFFF" : "#5D4E37",
-                          }}
-                        >
-                          {time}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                ) : (
-                  <View
-                    style={{
-                      backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
-                      borderRadius: 12,
-                      padding: 20,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontFamily: "Inter_500Medium",
-                        color: isDark ? "#9CA3AF" : "#8B7355",
-                        textAlign: "center",
-                      }}
-                    >
-                      No available time slots for this date
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </>
+          <DateTimeSelector
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            onDateSelect={handleDateSelect}
+            onTimeSelect={handleTimeSelect}
+            availabilityData={availabilityData}
+            isLoadingSlots={isLoadingSlots}
+            serviceId={service_id}
+          />
         )}
         
         {currentStep === 2 && (
