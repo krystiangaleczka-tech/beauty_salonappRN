@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { create } from 'zustand';
 import { Modal, View } from 'react-native';
-import { useAuthModal, useAuthStore, authKey } from './store';
+import { useAuthModal, useAuthStore, useUserStore, authKey } from './store';
 import { getValidAuth, isTokenExpired, refreshToken } from './tokenManager';
 import { secureGetItem } from './secureStorage';
 
@@ -15,6 +15,7 @@ import { secureGetItem } from './secureStorage';
  */
 export const useAuth = () => {
   const { isReady, auth, setAuth } = useAuthStore();
+  const { clearUser } = useUserStore();
   const { isOpen, close, open } = useAuthModal();
 
   const initiate = useCallback(async () => {
@@ -56,6 +57,7 @@ export const useAuth = () => {
           } else {
             // If refresh fails, sign out
             setAuth(null);
+            clearUser(); // Clear user data when token refresh fails
           }
         }
       } catch (error) {
@@ -71,7 +73,7 @@ export const useAuth = () => {
         clearInterval(refreshInterval);
       }
     };
-  }, [initiate, setAuth]);
+  }, [initiate, setAuth, clearUser]);
 
   const signIn = useCallback(() => {
     open({ mode: 'signin' });
@@ -82,8 +84,9 @@ export const useAuth = () => {
 
   const signOut = useCallback(() => {
     setAuth(null);
+    clearUser(); // Clear user data when signing out
     close();
-  }, [close]);
+  }, [close, clearUser]);
 
   return {
     isReady,
