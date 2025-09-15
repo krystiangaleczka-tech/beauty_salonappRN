@@ -1,78 +1,242 @@
-# Beauty Salon App (React Native)
+# 💄 Beauty Salon App
+### *Nowoczesne zarządzanie salonem kosmetycznym w jednym miejscu*
 
-Aplikacja do zarządzania salonem kosmetycznym, zbudowana jako monorepo z aplikacją mobilną (React Native/Expo) i interfejsem webowym.
+<div align="center">
 
-## Stos Technologiczny
+*"Technologia służy ludziom—nasz system sprawia, że zarządzanie salonem jest proste i przyjemne."*
 
-- **Monorepo**: `apps/mobile` (Expo/React Native), `apps/web` (Vite + React Router + Express dev server)
-- **Język**: TypeScript i JavaScript
-- **Mobilny**: Expo SDK 54, React Native 0.81.4, Expo Router 5, TanStack Query 5, ikony Lucide
-- **Web**: Vite 6, React 18, React Router 7, Express dev server, Chakra UI, TanStack Query, Stripe SDK
-- **Serwer/API (dev)**: Express proxy + Vite middleware (`apps/web/server.js`), trasy API w `apps/web/src/app/api/*`
-- **Warstwa DB**: PostgreSQL z konektorem `pg` (`@/app/api/utils/sql.js`), z awaryjnym przejściem na dane testowe
+</div>
 
-## Jak Uruchomić
+***
 
-### Aplikacja Mobilna (Expo)
-- Z głównego katalogu repozytorium: `cd apps/mobile && npx expo start`
-- Symulator iOS: naciśnij `i`; emulator Androida: naciśnij `a`; urządzenie: zeskanuj kod QR w Expo Go
+## 🌟 Projekt w Skrócie
 
-### Aplikacja Web (Vite + Express)
-- Z głównego katalogu repozytorium: `cd apps/web && npm i`, następnie `HOST=0.0.0.0 npm run dev` (uruchamia `node server.js`)
-- Otwiera serwer deweloperski na http://localhost:3000 (dostępny na wszystkich interfejsach sieciowych)
-- Dla połączenia z aplikacją mobilną: Użyj `HOST=0.0.0.0` aby powiązać serwer ze wszystkimi interfejsami
-- Proxy API do http://localhost:4000 via `/api` (zobacz `apps/web/server.js`)
+Aplikacja do zarządzania salonem kosmetycznym, zbudowana jako monorepo z aplikacją mobilną (React Native/Expo) i interfejsem webowym. Nasz system zapewnia kompleksowe zarządzanie operacjami salonu, w tym inteligentne planowanie wizyt, zarządzanie klientami, koordynację personelu i analitykę biznesową.
 
-## Struktura Repozytorium
+***
 
-- `apps/`
-  - `mobile/` — Aplikacja Expo/React Native
-  - `web/` — Aplikacja webowa Vite + React i trasy API
+## 🚀 Stos Technologiczny
 
-## Aplikacja Mobilna (apps/mobile)
+### Aplikacja Mobilna
+- **Framework**: Expo SDK 54, React Native 0.81.4
+- **Routing**: Expo Router 5
+- **Zarządzanie stanem**: TanStack Query 5
+- **Ikony**: Lucide
+- **Uwierzytelnianie**: WebView-based auth flow
 
-Aplikacja mobilna zbudowana na Expo i React Native, oferująca:
-- Przeglądanie usług salonu z kategoriami (Manicure, Pedicure, Podologia, Zabiegi na twarz, Brwi, Makijaż permanentny, Inne)
-- Rezerwację usług
-- Panel użytkownika
-- Integrację z systemem uwierzytelniania
+### Aplikacja Web
+- **Framework**: Vite 6, React 18, React Router 7
+- **Serwer deweloperski**: Express
+- **UI**: Chakra UI
+- **Zarządzanie stanem**: TanStack Query
+- **Płatności**: Stripe SDK
 
-### Główne komponenty
-- Ekran główny z zakładkami
-- Lista usług z filtrowaniem po kategoriach
-- Proces rezerwacji usług
-- Panel użytkownika
+### Backend / API
+- **Serwer**: Express proxy + Vite middleware (`apps/web/server.js`)
+- **Trasy API**: `apps/web/src/app/api/*`
+- **Baza danych**: PostgreSQL z konektorem `pg` (`@/app/api/utils/sql.js`)
+- **Dane testowe**: Awaryjne przejście na dane testowe
 
-## Aplikacja Web (apps/web)
+***
 
-Aplikacja webowa z serwerem deweloperskim Express, oferująca:
-- Interfejs administracyjny
-- API endpoints dla usług, rezerwacji i kalendarza
-- Integrację z Stripe
-- Panel administracyjny
+## 📁 Struktura Repozytorium
 
-### API Endpoints
-- `/api/services` - Zarządzanie usługami
-- `/api/bookings` - Zarządzanie rezerwacjami
-- `/api/availability` - Dostępność terminów
-- `/api/calendar/availability` - Dostępność kalendarza
-- `/api/auth/*` - Endpoints uwierzytelniania
+```
+beauty_salonappRN/
+├── apps/                      # Aplikacje
+│   ├── mobile/               # Aplikacja mobilna (Expo/React Native)
+│   │   ├── src/              # Kod źródłowy
+│   │   │   ├── app/          # Ekrany i routing
+│   │   │   ├── components/   # Komponenty
+│   │   │   ├── utils/        # Narzędzia
+│   │   │   └── config.ts     # Konfiguracja
+│   │   ├── assets/           # Zasoby (ikony, ekrany powitalne)
+│   │   ├── caches/           # Pliki cache Metro
+│   │   ├── patches/          # Poprawki zależności
+│   │   ├── polyfills/        # Polyfills dla web/native
+│   │   ├── App.tsx           # Wejście aplikacji Expo
+│   │   ├── app.json          # Konfiguracja Expo
+│   │   ├── eas.json          # Konfiguracja EAS
+│   │   ├── metro.config.js   # Konfiguracja Metro
+│   │   └── package.json      # Zależności i skrypty
+│   └── web/                  # Aplikacja webowa (Vite + React)
+│       ├── src/              # Kod źródłowy
+│       │   ├── app/          # Routing i layout
+│       │   │   ├── api/      # Trasy API
+│       │   │   ├── layout.jsx # Główny layout
+│       │   │   ├── page.jsx  # Domyślna strona
+│       │   │   └── root.tsx  # Integracja React Router
+│       │   ├── __create/     # Narzędzia deweloperskie
+│       │   ├── client-integrations/ # Integracje klienta
+│       │   ├── utils/        # Narzędzia
+│       │   └── auth.js       # Konfiguracja uwierzytelniania
+│       ├── plugins/          # Wtyczki Vite
+│       ├── server.js         # Serwer Express
+│       ├── test-server.js    # Serwer testowy
+│       ├── test/             # Testy
+│       ├── vite.config.ts    # Konfiguracja Vite
+│       └── package.json      # Zależności i skrypty
+├── packages/                 # Współdzielone pakiety
+│   └── types/                # Współdzielone typy TypeScript
+├── PROJECT_OVERVIEW.md       # Przegląd projektu
+├── README.md                 # Dokumentacja
+└── user_rules.md             # Zasady użytkownika
+```
 
-## Konwencje i Notatki
+***
 
+## 🛠️ Jak Uruchomić
+
+### Wymagania Wstępne
+- Node.js 18+
+- npm lub yarn
+
+### Szybki Start
+
+1. **Sklonuj repozytorium:**
+   ```bash
+   git clone https://github.com/krystiangaleczka-tech/beauty_salonappRN.git
+   cd beauty_salonappRN
+   ```
+
+2. **Uruchom aplikację mobilną (Terminal 1):**
+   ```bash
+   cd apps/mobile
+   npm install
+   npx expo start
+   ```
+   - Symulator iOS: naciśnij `i`
+   - Emulator Androida: naciśnij `a`
+   - Urządzenie: zeskanuj kod QR w Expo Go
+
+3. **Uruchom aplikację webową (Terminal 2):**
+   ```bash
+   cd apps/web
+   npm install
+   HOST=0.0.0.0 npm run dev
+   ```
+   - Aplikacja dostępna na: http://localhost:3000
+   - API dostępne na: http://localhost:4000 (przez proxy `/api`)
+
+***
+
+## 🏗️ Architektura
+
+### Monorepo
+Nasz projekt wykorzystuje architekturę monorepo, co pozwala na:
+- Współdzielenie kodu między aplikacjami mobilną i webową
+- Ujednolicone zarządzanie zależnościami
+- Spójne procesy deweloperskie
+
+### Komunikacja między aplikacjami
+- Aplikacja mobilna komunikuje się z API przez serwer deweloperski aplikacji webowej
+- Współdzielone typy w `packages/types` zapewniają spójność danych
+
+### Wzorce projektowe
+- **API-First**: Projektowanie z myślą o API jako podstawie komunikacji
+- **Component-Based**: Modularne komponenty w React i React Native
+- **State Management**: Zarządzanie stanem z użyciem TanStack Query
+
+***
+
+## 🎨 Kluczowe Funkcjonalności
+
+### Dla Właścicieli Salonów
+- Panel administracyjny do zarządzania usługami
+- Analityka biznesowa i śledzenie rezerwacji
+- Zarządzanie personelem i dostępnością
+- Integracja z systemem płatności Stripe
+
+### Dla Personelu
+- Personalny harmonogram pracy
+- Historia klientów i ich preferencje
+- System powiadomień o nowych rezerwacjach
+- Mobilny interfejs do zarządzania wizytami
+
+### Dla Klientów
+- Intuicyjna aplikacja mobilna do przeglądania usług
+- System rezerwacji wizyt online
+- Powiadomienia o nadchodzących wizytach
+- Historia poprzednich wizyt i preferencji
+
+***
+
+## 🔧 Przepływ Deweloperski
+
+### Struktura pracy
+- **Mobile**: Expo Router z routingiem opartym na plikach
+- **Web**: React Router z routingiem opartym na plikach
+- **API**: Trasy API w `apps/web/src/app/api/*` z obsługą bazy danych PostgreSQL
+
+### Konwencje
 - **Ścieżki**: Wiele plików API webowych używa aliasowania ścieżek `@/app/...`
 - **Pobieranie danych**: Aplikacja mobilna pobiera dane z `/api` oczekując, że serwer deweloperski web będzie proxy do backendu
-- **API Services**: Mobilny `services.jsx` używa `GET /api/services` i oczekuje pól: `id`, `name`, `description`, `category`, `duration_minutes`, `price`. Filtrowanie po kategoriach jest po stronie serwera via `?category=` param
+- **API Services**: Mobilny `services.jsx` używa `GET /api/services` i oczekuje pól: `id`, `name`, `description`, `category`, `duration_minutes`, `price`
 - **Style**: Aplikacja mobilna używa stylów inline z ciepłą paletą. Web używa globalnego CSS i Chakra UI
 
-## Przyszłe Prace / Pamięć
+***
 
-- Jeśli dodajesz nowe kategorie usług, zapewnij spójność ciągów `category` w DB i danych testowych
-- ✅ Filtrowanie po stronie serwera zaimplementowane w `apps/web/src/app/api/services/route.js` przez parametr zapytania `?category=Pedicure`
-- Dodaj testy dla endpointów API używając `vitest`
-- Udokumentuj zmienne środowiskowe w `apps/web/.env`
-- scentralizuj współdzielone typy dla Service między mobile a web (np. `/packages/types`)
+## 🧪 Testowanie
 
-## Licencja
+### Aplikacja Webowa
+```bash
+cd apps/web
+npm test
+npm run test:coverage
+```
+
+### API
+```bash
+cd apps/web
+npm run test:api
+```
+
+***
+
+## 📚 Dokumentacja
+
+- **Przegląd projektu**: `PROJECT_OVERVIEW.md`
+- **Zasady użytkownika**: `user_rules.md`
+- **API Dokumentacja**: Dostępna po uruchomieniu serwera deweloperskiego
+
+***
+
+## 🚀 Wdrożenie
+
+### Rozwój
+- **Mobile**: Expo Development Build
+- **Web**: Serwer deweloperski Express + Vite
+
+### Produkcja
+- **Mobile**: EAS Build dla iOS i Android
+- **Web**: Vercel/Netlify z globalnym CDN
+- **API**: Railway/Heroku z PostgreSQL
+
+***
+
+## 📄 Licencja
 
 [Dodaj informacje o licencji]
+
+***
+
+## 🤝 Współpraca
+
+1. Postępuj zgodnie z ustalonym stylem kodowania (ESLint, Prettier)
+2. Pisz testy dla nowych funkcji
+3. Aktualizuj dokumentację w razie potrzeby
+4. Postępuj zgodnie z przepływem pracy opartym na zadaniach
+
+***
+
+<div align="center">
+
+### *"Dziękujemy za wybór naszej aplikacji do zarządzania salonem kosmetycznym"*
+
+**🌟 Zrobione z pasją dla branży beauty 🌟**
+
+***
+
+*Gotowy, aby usprawnić zarządzanie swoim salonem? Rozpocznij już dziś! 💄✨*
+
+</div>
