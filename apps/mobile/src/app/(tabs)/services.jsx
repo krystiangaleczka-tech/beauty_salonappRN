@@ -12,7 +12,7 @@ import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import { Clock, DollarSign, Scissors, Search, X } from "lucide-react-native";
+import { Clock, DollarSign, Scissors, Search, X, WifiOff, AlertCircle } from "lucide-react-native";
 import {
   useFonts,
   Inter_400Regular,
@@ -54,8 +54,16 @@ export default function ServicesScreen() {
           : `${BASE_URL}/api/services?category=${encodeURIComponent(selectedCategory)}`;
         console.log("Fetching from URL:", url);
         console.log("BASE_URL:", BASE_URL);
+        console.log("Network state:", navigator ? navigator.onLine : "Unknown");
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Add timeout to detect connection issues
+          signal: AbortSignal.timeout(10000) // 10 seconds timeout
+        });
         console.log("Response status:", response.status);
         console.log("Response ok:", response.ok);
         
@@ -73,6 +81,15 @@ export default function ServicesScreen() {
         console.error("Fetch error details:", fetchError);
         console.error("Error message:", fetchError.message);
         console.error("Error stack:", fetchError.stack);
+        console.error("Error type:", fetchError.name);
+        
+        // Add specific handling for network errors
+        if (fetchError.name === 'AbortError') {
+          console.error("Request timed out - possible network issue");
+        } else if (fetchError.name === 'TypeError' && fetchError.message.includes('Network request failed')) {
+          console.error("Network request failed - likely incorrect BASE_URL or server not reachable");
+        }
+        
         throw fetchError;
       }
     },
@@ -125,7 +142,7 @@ export default function ServicesScreen() {
     return null;
   }
 
-  // Animation effect
+  // Animation effect - only run once on mount
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -139,7 +156,7 @@ export default function ServicesScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, slideAnim]);
+  }, []); // Empty dependency array means this runs only once on mount
 
   // Memoized key extractor for FlatList
   const keyExtractor = useCallback((item) => `service-${item.id}`, []);
@@ -300,6 +317,93 @@ export default function ServicesScreen() {
     );
   };
 
+  // Render error state
+  const renderErrorState = () => {
+    const isNetworkError = error?.name === 'TypeError' && error?.message?.includes('Network request failed');
+    const isTimeoutError = error?.name === 'AbortError';
+    
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingVertical: 60,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: "#FFFFFF",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 24,
+            borderWidth: 1,
+            borderColor: "#F4E6D7",
+          }}
+        >
+          {isNetworkError || isTimeoutError ? (
+            <WifiOff size={32} color="#E91E63" />
+          ) : (
+            <AlertCircle size={32} color="#E91E63" />
+          )}
+        </View>
+
+        <Text
+          style={{
+            fontSize: 20,
+            fontFamily: "Inter_600SemiBold",
+            color: "#5D4E37",
+            marginBottom: 8,
+            textAlign: "center",
+          }}
+        >
+          {isNetworkError || isTimeoutError ? "Connection Error" : "Error Loading Services"}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: "Inter_400Regular",
+            color: "#8B7355",
+            textAlign: "center",
+            lineHeight: 24,
+            paddingHorizontal: 40,
+            marginBottom: 24,
+          }}
+        >
+          {isNetworkError || isTimeoutError
+            ? "Unable to connect to the server. Please check your internet connection and try again."
+            : "An error occurred while loading services. Please try again later."
+          }
+        </Text>
+        
+        <TouchableOpacity
+          onPress={() => window.location.reload()}
+          style={{
+            backgroundColor: "#E91E63",
+            borderRadius: 12,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: "Inter_600SemiBold",
+              color: "#FFFFFF",
+            }}
+          >
+            Try Again
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#FDF8F0" }}>
       <StatusBar style="dark" />
@@ -428,6 +532,9 @@ export default function ServicesScreen() {
               />
             ))}
           </View>
+        ) : error ? (
+          // Error state
+          renderErrorState()
         ) : filteredServices.length > 0 ? (
           <FlatList
             data={filteredServices}
