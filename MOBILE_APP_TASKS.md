@@ -1,7 +1,7 @@
 # Mobile App Development Tasks
 
 ## 📋 Overview
-**Progress:** 55% complete  
+**Progress:** 70% complete  
 
 This document tracks the development tasks specifically for the mobile app (Expo/React Native) portion of the CreateXYZ project.
 
@@ -64,16 +64,16 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 2.4.1.2 [x] Implement service details display
 
 ##### 2.4.2 Date/Time Selection
-- 2.4.2.1 [ ] Add date/time selection component
-- 2.4.2.2 [ ] Create calendar UI
-- 2.4.2.3 [ ] Implement time slot selection
-- 2.4.2.4 [ ] Connect to availability API
+- 2.4.2.1 [x] Add date/time selection component
+- 2.4.2.2 [x] Create calendar UI
+- 2.4.2.3 [x] Implement time slot selection
+- 2.4.2.4 [x] Connect to availability API
 
 ##### 2.4.3 Booking Form
-- 2.4.3.1 [ ] Implement booking form
+- 2.4.3.1 [x] Implement booking form
 - 2.4.3.2 [x] Create form UI components
-- 2.4.3.3 [ ] Add form validation
-- 2.4.3.4 [ ] Implement form submission
+- 2.4.3.3 [x] Add form validation
+- 2.4.3.4 [x] Implement form submission
 
 ##### 2.4.4 Payment Integration
 - 2.4.4.1 [ ] Add payment integration
@@ -106,7 +106,7 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 3.1.1 [x] Connect to services API
 - 3.1.2 [x] Implement data fetching with TanStack Query
 - 3.1.3 [x] Add error handling
-- 3.1.4 [ ] Implement offline data caching
+- 3.1.4 [x] Implement offline data caching
 
 #### 3.2 Bookings API
 - 3.2.1 [x] Connect to bookings API
@@ -131,7 +131,7 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 4.1.4 [ ] Implement hook tests
 
 #### 4.2 Integration Testing
-- 4.2.1 [ ] Implement integration tests for auth flow
+- 4.2.1 [x] Implement integration tests for auth flow
 - 4.2.2 [ ] Add tests for API integration
 - 4.2.3 [ ] Test navigation flows
 - 4.2.4 [ ] Test state management
@@ -179,3 +179,4 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - Added token refresh endpoint at `/api/auth/refresh`
 - Added user profile endpoint at `/api/user/profile` with caching mechanism
 - Implemented user data clearing on sign out and token refresh failure
+- DateTimeSelector component has been implemented for booking flow

@@ -6,9 +6,10 @@ This directory contains a set of markdown task lists for tracking the developmen
 
 ## Task List Files
 
-- **PROJECT_TASK_LIST.md**: Main project task list with a high-level overview of all development areas
-- **MOBILE_APP_TASKS.md**: Detailed tasks for the mobile app (Expo/React Native) development
-- **WEB_API_TASKS.md**: Detailed tasks for the web app and API development
+- **PROJECT_TASK_LIST.md**: Main project task list with a high-level overview of all development areas (60% complete)
+- **MOBILE_APP_TASKS.md**: Detailed tasks for the mobile app (Expo/React Native) development (70% complete)
+- **WEB_API_TASKS.md**: Detailed tasks for the web app and API development (50% complete)
+- **TASKS.md**: Summary of all task lists with current priorities and progress overview
 
 ## How to Use These Task Lists
 
@@ -48,6 +49,14 @@ Each task list is organized into sections:
 2. **Update after completing work**: Mark tasks as complete immediately after finishing them
 3. **Plan sprints**: Use the Upcoming Tasks sections to plan future development cycles
 4. **Track blockers**: Add notes to tasks that are blocked or waiting on dependencies
+
+## Recent Updates
+
+- Updated progress percentages across all task lists
+- Marked DateTimeSelector component as completed in mobile app tasks
+- Updated authentication flow tasks to reflect completed token management
+- Added notes about implemented API endpoints and authentication middleware
+- Updated booking flow tasks to reflect completed date/time selection functionality
 
 ## Example Task Format
 

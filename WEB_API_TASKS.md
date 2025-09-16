@@ -1,7 +1,7 @@
 # Web App & API Development Tasks
 
 ## 📋 Overview
-**Progress:** 50% complete  
+**Progress:** 65% complete  
 
 This document tracks the development tasks for the web application (Vite/React) and API endpoints of the CreateXYZ project.
 
@@ -45,8 +45,8 @@ This document tracks the development tasks for the web application (Vite/React) 
 
 #### 2.5 Data Management
 - 2.5.1 [x] Set up TanStack Query for data fetching
-- 2.5.2 [ ] Implement optimistic updates
-- 2.5.3 [ ] Add data caching strategies
+- 2.5.2 [x] Implement optimistic updates
+- 2.5.3 [x] Add data caching strategies
 - 2.5.4 [ ] Create data validation with Zod
 
 ### 3.0 API Development (Backend)
@@ -75,7 +75,7 @@ This document tracks the development tasks for the web application (Vite/React) 
 
 #### 3.5 Availability Endpoints
 - 3.5.1 [x] Create basic availability endpoint
-- 3.5.2 [ ] Implement calendar availability
+- 3.5.2 [x] Implement calendar availability
 - 3.5.3 [ ] Add Google Calendar sync
 
 ### 4.0 Testing
@@ -88,7 +88,7 @@ This document tracks the development tasks for the web application (Vite/React) 
 - 4.2.2 [ ] Add tests for UI components
 
 #### 4.3 Integration Testing
-- 4.3.1 [ ] Add integration tests for critical flows
+- 4.3.1 [x] Add integration tests for critical flows
 - 4.3.2 [ ] Test API integration with frontend
 
 ### 5.0 Performance Optimization
@@ -120,3 +120,5 @@ This document tracks the development tasks for the web application (Vite/React) 
 - Server-side filtering implemented in `apps/web/src/app/api/services/route.js`
 - Added authentication middleware in `apps/web/src/app/api/utils/authMiddleware.js`
 - Added user profile endpoint at `/api/user/profile` with authentication
+- Implemented calendar availability endpoint at `/api/calendar/availability`
+- Added integration tests for authentication flow

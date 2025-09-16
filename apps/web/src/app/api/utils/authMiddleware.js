@@ -1,4 +1,5 @@
 import { getToken } from '@auth/core/jwt';
+import sql from './sql';
 
 /**
  * Middleware to authenticate API requests using JWT tokens
@@ -113,9 +114,15 @@ export async function checkResourcePermission(request, resourceType, resourceId)
     switch (resourceType) {
       case 'booking':
         // Users can only access their own bookings
-        // This would require a database query to check booking ownership
-        // For now, we'll implement a simple check
-        return true; // Placeholder - implement actual check
+        const bookingResult = await sql`
+          SELECT user_id FROM bookings WHERE id = ${resourceId}
+        `;
+        
+        if (bookingResult.length === 0) {
+          return false; // Booking doesn't exist
+        }
+        
+        return bookingResult[0].user_id === authResult.user.id;
         
       case 'service':
         // Services are generally readable by all authenticated users
@@ -123,8 +130,16 @@ export async function checkResourcePermission(request, resourceType, resourceId)
         
       case 'availability':
         // Users can only manage their own availability
-        // This would require a database query to check ownership
-        return true; // Placeholder - implement actual check
+        // For availability settings, we check if the user_id matches
+        const availabilityResult = await sql`
+          SELECT user_id FROM availability_settings WHERE id = ${resourceId}
+        `;
+        
+        if (availabilityResult.length === 0) {
+          return false; // Availability setting doesn't exist
+        }
+        
+        return availabilityResult[0].user_id === authResult.user.id;
         
       default:
         return false;

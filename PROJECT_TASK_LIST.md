@@ -1,7 +1,7 @@
 # Project: CreateXYZ Task List
 
 ## 📋 Overview
-**Progress:** 40% complete  
+**Progress:** 60% complete  
 
 This task list tracks the development progress of the CreateXYZ project, a monorepo containing a mobile app (Expo/React Native) and a web app (Vite/React) with shared backend services.
 
@@ -42,14 +42,15 @@ This task list tracks the development progress of the CreateXYZ project, a monor
 
 #### 2.4 Booking Flow Implementation #priority
 - 2.4.1 [x] Create booking form UI
-- 2.4.2 [ ] Implement date/time selection
-- 2.4.4 [ ] Connect to booking API
+- 2.4.2 [x] Implement date/time selection
+- 2.4.3 [x] Connect to booking API
+- 2.4.4 [x] Implement form validation
 
 #### 2.5 Authentication Flow #priority
 - 2.5.1 [x] Set up WebView-based auth
 - 2.5.2 [x] Create Zustand store for auth state
-- 2.5.3 [ ] Handle token refresh
-- 2.5.4 [ ] Add secure storage for credentials
+- 2.5.3 [x] Handle token refresh
+- 2.5.4 [x] Add secure storage for credentials
 
 ### 3.0 Web App Development (Frontend)
 #### 3.1 Project Setup
@@ -75,9 +76,9 @@ This task list tracks the development progress of the CreateXYZ project, a monor
 #### 4.2 Core Endpoints #priority
 - 4.2.1 [x] Services endpoints (GET, POST)
 - 4.2.2 [x] Server-side filtering for services
-- 4.2.3 [ ] Complete bookings endpoints
-- 4.2.4 [ ] Finalize availability endpoints
-- 4.2.5 [ ] Secure API routes with authentication
+- 4.2.3 [x] Complete bookings endpoints
+- 4.2.4 [x] Finalize availability endpoints
+- 4.2.5 [x] Secure API routes with authentication
 
 #### 4.3 Calendar Integration
 - 4.3.1 [x] Create availability endpoints
@@ -89,7 +90,7 @@ This task list tracks the development progress of the CreateXYZ project, a monor
 - 5.1.2 [ ] Write unit tests for API endpoints #testing
 
 #### 5.2 Integration Testing
-- 5.2.1 [ ] Implement integration tests for critical user flows
+- 5.2.1 [x] Implement integration tests for critical user flows
 - 5.2.2 [ ] Add integration tests for web app components
 
 #### 5.3 E2E Testing
@@ -120,4 +121,8 @@ This task list tracks the development progress of the CreateXYZ project, a monor
 - API uses Express with PostgreSQL (pg connector)
 - Services API expects fields: `id`, `name`, `description`, `category`, `duration_minutes`, `price`
 - Server-side filtering implemented via `?category=` query parameter
+- Added authentication middleware for all API endpoints
+- Implemented token refresh mechanism
+- Added user profile endpoint at `/api/user/profile`
+- DateTimeSelector component has been implemented for mobile app booking flow
 - [Project Overview](/Users/krystiangaleczka/Downloads/createxyz-project/PROJECT_OVERVIEW.md)
