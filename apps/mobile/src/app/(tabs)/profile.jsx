@@ -33,7 +33,7 @@ import {
 } from "@expo-google-fonts/inter";
 import * as ImagePicker from "expo-image-picker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -44,6 +44,9 @@ export default function ProfileScreen() {
     "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200",
   );
   const [showHeaderBorder, setShowHeaderBorder] = useState(false);
+  
+  // Memoize the profile image source to prevent unnecessary re-renders
+  const profileImageSource = useMemo(() => ({ uri: profileImage }), [profileImage]);
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -364,13 +367,18 @@ export default function ProfileScreen() {
           {/* Avatar with Camera Badge */}
           <View style={{ position: "relative", marginBottom: 16 }}>
             <Image
-              source={{ uri: profileImage }}
+              source={profileImageSource}
               style={{
                 width: 120,
                 height: 120,
                 borderRadius: 60,
               }}
               contentFit="cover"
+              placeholder="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=50"
+              placeholderContentFit="cover"
+              transition={300}
+              recyclingKey={profileImage}
+              cachePolicy="memory-disk"
             />
             <TouchableOpacity
               onPress={handleImagePicker}

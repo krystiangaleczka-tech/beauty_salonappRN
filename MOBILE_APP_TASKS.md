@@ -75,11 +75,6 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 2.4.3.3 [x] Add form validation
 - 2.4.3.4 [x] Implement form submission
 
-##### 2.4.4 Payment Integration
-- 2.4.4.1 [ ] Add payment integration
-- 2.4.4.2 [ ] Create payment method selection
-- 2.4.4.3 [ ] Implement secure payment processing
-- 2.4.4.4 [ ] Add payment confirmation
 
 ##### 2.4.5 Booking Confirmation
 - 2.4.5.1 [ ] Implement booking confirmation

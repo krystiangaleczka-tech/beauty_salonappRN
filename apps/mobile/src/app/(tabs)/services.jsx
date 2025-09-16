@@ -4,12 +4,15 @@ import {
   ScrollView,
   TouchableOpacity,
   useColorScheme,
+  TextInput,
+  Animated,
+  FlatList,
 } from "react-native";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import { Clock, DollarSign, Scissors } from "lucide-react-native";
+import { Clock, DollarSign, Scissors, Search, X } from "lucide-react-native";
 import {
   useFonts,
   Inter_400Regular,
@@ -17,7 +20,7 @@ import {
   Inter_600SemiBold,
 } from "@expo-google-fonts/inter";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { BASE_URL } from "../../config";
 
 export default function ServicesScreen() {
@@ -25,6 +28,12 @@ export default function ServicesScreen() {
   const router = useRouter();
   const [showHeaderBorder, setShowHeaderBorder] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -82,101 +91,214 @@ export default function ServicesScreen() {
     return ["All", ...uniqueCategories.sort()];
   }, [servicesData]);
 
-  // Services are now filtered server-side, no need for client-side filtering
+  // Filter services based on search query
+  const filteredServices = useMemo(() => {
+    if (!servicesData?.services) return [];
+    if (!searchQuery.trim()) return servicesData.services;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return servicesData.services.filter(service =>
+      service.name.toLowerCase().includes(query) ||
+      service.description.toLowerCase().includes(query) ||
+      service.category.toLowerCase().includes(query)
+    );
+  }, [servicesData, searchQuery]);
+
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleCategorySelect = useCallback((category) => {
+    setSelectedCategory(category);
+  }, []);
+
+  const handleSearchChange = useCallback((text) => {
+    setSearchQuery(text);
+  }, []);
+
+  const handleSearchFocus = useCallback(() => {
+    setIsSearchFocused(true);
+  }, []);
+
+  const handleSearchBlur = useCallback(() => {
+    setIsSearchFocused(false);
+  }, []);
 
   if (!fontsLoaded) {
     return null;
   }
+
+  // Animation effect
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  // Memoized key extractor for FlatList
+  const keyExtractor = useCallback((item) => `service-${item.id}`, []);
 
   const handleScroll = (event) => {
     const scrollY = event.nativeEvent.contentOffset.y;
     setShowHeaderBorder(scrollY > 0);
   };
 
-  const handleServiceSelect = (service) => {
+  const handleServiceSelect = useCallback((service) => {
     router.push(
       `/book-service?service_id=${service.id}&service_name=${encodeURIComponent(service.name)}`,
     );
-  };
+  }, [router]);
 
-  const renderServiceCard = (service) => (
-    <TouchableOpacity
-      key={service.id}
-      onPress={() => handleServiceSelect(service)}
-      style={{
-        backgroundColor: "#FFFFFF", // white background
-        borderRadius: 16,
-        padding: 20,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#F4E6D7", // light beige border
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-      }}
-      activeOpacity={0.8}
-    >
-      <View style={{ marginBottom: 12 }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: "Inter_600SemiBold",
-            color: "#5D4E37", // warm brown text
-            marginBottom: 6,
-          }}
-        >
-          {service.name}
-        </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            fontFamily: "Inter_400Regular",
-            color: "#8B7355", // muted brown
-            lineHeight: 20,
-          }}
-        >
-          {service.description}
-        </Text>
-      </View>
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+  }, []);
 
-      <View
+  const renderServiceCard = (service, index) => {
+    // Calculate animation delay based on index
+    const animationDelay = index * 50;
+    
+    return (
+      <Animated.View
+        key={service.id}
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+          // Add delay for staggered animation
+          animationDelay: `${animationDelay}ms`,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Clock size={16} color="#8B7355" />
-          <Text
-            style={{
-              fontSize: 14,
-              fontFamily: "Inter_500Medium",
-              color: "#8B7355",
-              marginLeft: 6,
-            }}
-          >
-            {service.duration_minutes} min
-          </Text>
-        </View>
+        <TouchableOpacity
+          onPress={() => handleServiceSelect(service)}
+          style={{
+            backgroundColor: "#FFFFFF", // white background
+            borderRadius: 16,
+            padding: 20,
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: "#F4E6D7", // light beige border
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3,
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: "row", marginBottom: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: "Inter_600SemiBold",
+                  color: "#5D4E37", // warm brown text
+                  marginBottom: 6,
+                }}
+              >
+                {service.name}
+              </Text>
+              <View
+                style={{
+                  backgroundColor: "#F4E6D7",
+                  borderRadius: 12,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  alignSelf: "flex-start",
+                  marginBottom: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Inter_500Medium",
+                    color: "#8B7355",
+                  }}
+                >
+                  {service.category}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: "Inter_400Regular",
+                  color: "#8B7355", // muted brown
+                  lineHeight: 20,
+                }}
+              >
+                {service.description}
+              </Text>
+            </View>
+          </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <DollarSign size={16} color="#E91E63" />
-          <Text
+          <View
             style={{
-              fontSize: 16,
-              fontFamily: "Inter_600SemiBold",
-              color: "#E91E63", // pink accent
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderTopWidth: 1,
+              borderTopColor: "#F4E6D7",
+              paddingTop: 12,
             }}
           >
-            {parseFloat(service.price).toFixed(2)}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "#FDF8F0",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 8,
+                }}
+              >
+                <Clock size={16} color="#8B7355" />
+              </View>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: "Inter_500Medium",
+                  color: "#8B7355",
+                }}
+              >
+                {service.duration_minutes} min
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "#FDF8F0",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 8,
+                }}
+              >
+                <DollarSign size={16} color="#E91E63" />
+              </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Inter_600SemiBold",
+                  color: "#E91E63", // pink accent
+                }}
+              >
+                {parseFloat(service.price).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FDF8F0" }}>
@@ -214,8 +336,47 @@ export default function ServicesScreen() {
         </Text>
       </View>
 
-      {/* Category Filter */}
+      {/* Search Bar */}
       <View style={{ paddingHorizontal: 20, paddingVertical: 12 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#FFFFFF",
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: isSearchFocused ? "#E91E63" : "#F4E6D7",
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+          }}
+        >
+          <Search size={20} color={isSearchFocused ? "#E91E63" : "#8B7355"} />
+          <TextInput
+            style={{
+              flex: 1,
+              fontSize: 16,
+              fontFamily: "Inter_400Regular",
+              color: "#5D4E37",
+              marginLeft: 12,
+              padding: 0,
+            }}
+            placeholder="Search services..."
+            placeholderTextColor="#8B7355"
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch}>
+              <X size={20} color="#8B7355" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* Category Filter */}
+      <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -224,7 +385,7 @@ export default function ServicesScreen() {
           {categories.map((category) => (
             <TouchableOpacity
               key={category}
-              onPress={() => setSelectedCategory(category)}
+              onPress={() => handleCategorySelect(category)}
               style={{
                 paddingHorizontal: 20,
                 paddingVertical: 10,
@@ -250,42 +411,55 @@ export default function ServicesScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: insets.bottom + 20,
-          paddingTop: 16,
-        }}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
+      <View style={{ flex: 1 }}>
         {isLoading ? (
           // Loading skeleton
-          Array.from({ length: 3 }).map((_, index) => (
-            <View
-              key={index}
-              style={{
-                backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-                padding: 20,
-                marginBottom: 16,
-                height: 120,
-              }}
-            />
-          ))
-        ) : servicesData?.services?.length > 0 ? (
-          servicesData.services.map(renderServiceCard)
+          <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                  padding: 20,
+                  marginBottom: 16,
+                  height: 120,
+                }}
+              />
+            ))}
+          </View>
+        ) : filteredServices.length > 0 ? (
+          <FlatList
+            data={filteredServices}
+            renderItem={({ item, index }) => renderServiceCard(item, index)}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingBottom: insets.bottom + 20,
+              paddingTop: 16,
+            }}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            // Performance optimizations
+            initialNumToRender={6}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            removeClippedSubviews={true}
+            // Enable this on Android for better performance
+            // Note: This may cause issues with some animations
+            // disableVirtualization={Platform.OS === 'android'}
+          />
         ) : (
           // Empty state
-          <View
-            style={{
+          <ScrollView
+            contentContainerStyle={{
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
               paddingVertical: 60,
             }}
+            showsVerticalScrollIndicator={false}
           >
             <View
               style={{
@@ -325,11 +499,14 @@ export default function ServicesScreen() {
                 paddingHorizontal: 40,
               }}
             >
-              Services will appear here once they are added
+              {searchQuery
+                ? "No services match your search. Try a different search term."
+                : "Services will appear here once they are added"
+              }
             </Text>
-          </View>
+          </ScrollView>
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 }

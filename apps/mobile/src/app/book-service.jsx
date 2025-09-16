@@ -108,6 +108,28 @@ export default function BookServiceScreen() {
       Alert.alert('Booking Failed', error.message);
     },
   });
+
+  // Cancel booking mutation
+  const cancelBookingMutation = useMutation({
+    mutationFn: async (bookingId) => {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to cancel booking');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
+      Alert.alert('Booking Cancelled', 'Your booking has been successfully cancelled.');
+      router.push('/(tabs)/services');
+    },
+    onError: (error) => {
+      Alert.alert('Cancellation Failed', error.message);
+    },
+  });
   
   // Validation schema for booking form
   const BookingSchema = Yup.object().shape({
@@ -158,6 +180,26 @@ export default function BookServiceScreen() {
   
   const handleViewBookings = () => {
     router.push('/(tabs)/bookings');
+  };
+
+  const handleCancelBooking = () => {
+    if (!bookingDetails) return;
+    
+    Alert.alert(
+      'Cancel Booking',
+      'Are you sure you want to cancel this booking?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: () => cancelBookingMutation.mutate(bookingDetails.id),
+        },
+      ]
+    );
   };
 
   // Render step indicators
@@ -635,12 +677,12 @@ export default function BookServiceScreen() {
               )}
             </View>
             
-            <View style={{ flexDirection: 'row', width: '100%', gap: 12 }}>
+            <View style={{ width: '100%', gap: 12 }}>
               <TouchableOpacity
-                onPress={handleViewBookings}
+                onPress={handleCancelBooking}
+                disabled={cancelBookingMutation.isPending}
                 style={{
-                  flex: 1,
-                  backgroundColor: "#C8A882",
+                  backgroundColor: "#EF4444",
                   borderRadius: 12,
                   minHeight: 56,
                   justifyContent: "center",
@@ -655,34 +697,59 @@ export default function BookServiceScreen() {
                     color: "#FFFFFF",
                   }}
                 >
-                  View Bookings
+                  {cancelBookingMutation.isPending ? "Cancelling..." : "Cancel Booking"}
                 </Text>
               </TouchableOpacity>
               
-              <TouchableOpacity
-                onPress={handleBackToServices}
-                style={{
-                  flex: 1,
-                  backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
-                  borderWidth: 1,
-                  borderColor: "#C8A882",
-                  borderRadius: 12,
-                  minHeight: 56,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-                activeOpacity={0.8}
-              >
-                <Text
+              <View style={{ flexDirection: 'row', width: '100%', gap: 12 }}>
+                <TouchableOpacity
+                  onPress={handleViewBookings}
                   style={{
-                    fontSize: 16,
-                    fontFamily: "Inter_600SemiBold",
-                    color: "#C8A882",
+                    flex: 1,
+                    backgroundColor: "#C8A882",
+                    borderRadius: 12,
+                    minHeight: 56,
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
+                  activeOpacity={0.8}
                 >
-                  Book Another
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: "Inter_600SemiBold",
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    View Bookings
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={handleBackToServices}
+                  style={{
+                    flex: 1,
+                    backgroundColor: isDark ? "#2A2A2A" : "#F9F5ED",
+                    borderWidth: 1,
+                    borderColor: "#C8A882",
+                    borderRadius: 12,
+                    minHeight: 56,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: "Inter_600SemiBold",
+                      color: "#C8A882",
+                    }}
+                  >
+                    Book Another
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
