@@ -1,4 +1,5 @@
 import { getToken } from '@auth/core/jwt';
+import { SignJWT } from 'jose';
 import { withAuth } from '@/app/api/utils/authMiddleware';
 
 export const POST = withAuth(async (request) => {
@@ -40,24 +41,30 @@ export const POST = withAuth(async (request) => {
       );
     }
 
-    // Generate a new token
-    // In a real implementation, you would use your auth provider's refresh token mechanism
-    // For this example, we'll just extend the expiration time
+    // Create a new JWT token
+    const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
     
-    // This is a simplified refresh - in production, you'd use proper JWT refresh mechanisms
-    const newTokenExpiry = now + 3600; // 1 hour from now
-    
-    // Note: In a real application, you would use your auth provider's refresh token mechanism
-    // This is a simplified example for demonstration purposes
-    
+    const newToken = await new SignJWT({
+      sub: currentToken.sub,
+      email: currentToken.email,
+      name: currentToken.name,
+      isAdmin: currentToken.isAdmin || false,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(now + 3600) // 1 hour from now
+      .sign(secret);
+
     return new Response(
       JSON.stringify({
         message: 'Token refreshed successfully',
-        expiresAt: new Date(newTokenExpiry * 1000).toISOString(),
+        token: newToken,
+        expiresAt: new Date((now + 3600) * 1000).toISOString(),
         user: {
           id: currentToken.sub,
           email: currentToken.email,
           name: currentToken.name,
+          isAdmin: currentToken.isAdmin || false,
         },
       }),
       {

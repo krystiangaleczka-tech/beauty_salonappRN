@@ -38,12 +38,16 @@ async function encrypt(data) {
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('');
     
-    // Use the digest function as a simple encryption method
-    // In a production app, you would use a proper encryption algorithm
-    const encrypted = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      data + key + ivHex
-    );
+    // Use a simple XOR encryption with the key and IV
+    // In a production app, you would use a proper encryption algorithm like AES
+    let encrypted = '';
+    for (let i = 0; i < data.length; i++) {
+      const keyChar = key.charCodeAt(i % key.length);
+      const ivChar = parseInt(ivHex.charAt(i % ivHex.length), 16);
+      const dataChar = data.charCodeAt(i);
+      const encryptedChar = (dataChar ^ keyChar ^ ivChar) % 256;
+      encrypted += encryptedChar.toString(16).padStart(2, '0');
+    }
     
     // Store the IV with the encrypted data
     return JSON.stringify({
@@ -68,10 +72,19 @@ async function decrypt(encryptedData) {
     
     // If we have valid encrypted data format
     if (iv && data) {
-      // In a real implementation, you would use the IV and key to decrypt
-      // For now, we'll just return the encrypted data as we can't easily decrypt
-      // the SHA256 hash used above
-      return data;
+      const key = await getEncryptionKey();
+      
+      // Decrypt using the same XOR method
+      let decrypted = '';
+      for (let i = 0; i < data.length; i += 2) {
+        const encryptedByte = parseInt(data.substr(i, 2), 16);
+        const keyChar = key.charCodeAt((i / 2) % key.length);
+        const ivChar = parseInt(iv.charAt((i / 2) % iv.length), 16);
+        const decryptedChar = (encryptedByte ^ keyChar ^ ivChar) % 256;
+        decrypted += String.fromCharCode(decryptedChar);
+      }
+      
+      return decrypted;
     }
     
     // If the format is invalid, return null

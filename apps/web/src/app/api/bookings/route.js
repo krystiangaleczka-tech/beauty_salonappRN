@@ -1,5 +1,5 @@
 import sql from "@/app/api/utils/sql";
-import { withAuth } from "@/app/api/utils/authMiddleware";
+import { withAuth, authenticateRequest } from "@/app/api/utils/authMiddleware";
 
 // GET - List bookings with optional filters
 export const GET = withAuth(async (request) => {
@@ -53,9 +53,9 @@ export const GET = withAuth(async (request) => {
 });
 
 // POST - Create new booking
-export const POST = withAuth(async (request) => {
+export const POST = async (request) => {
   try {
-    const { service_id, booking_date, start_time, notes } = await request.json();
+    const { service_id, booking_date, start_time, notes, user_info } = await request.json();
     
     if (!service_id || !booking_date || !start_time) {
       return Response.json({ error: 'Service, date, and time are required' }, { status: 400 });
@@ -73,9 +73,39 @@ export const POST = withAuth(async (request) => {
       return Response.json({ error: 'Time slot not available' }, { status: 409 });
     }
     
+    // Try to authenticate the user
+    const authResult = await authenticateRequest(request);
+    let userId = null;
+    
+    if (authResult.isAuthenticated) {
+      // Use authenticated user's ID
+      userId = authResult.user.id;
+    } else if (user_info && user_info.email) {
+      // For unauthenticated users, check if user exists by email
+      const existingUser = await sql`
+        SELECT id FROM users 
+        WHERE email = ${user_info.email}
+      `;
+      
+      if (existingUser.length > 0) {
+        // Use existing user's ID
+        userId = existingUser[0].id;
+      } else {
+        // Create a new user
+        const newUser = await sql`
+          INSERT INTO users (name, email, phone)
+          VALUES (${user_info.name}, ${user_info.email}, ${user_info.phone})
+          RETURNING id
+        `;
+        userId = newUser[0].id;
+      }
+    } else {
+      return Response.json({ error: 'User information is required' }, { status: 400 });
+    }
+    
     const booking = await sql`
       INSERT INTO bookings (user_id, service_id, booking_date, start_time, notes)
-      VALUES (${request.user.id}, ${service_id}, ${booking_date}, ${start_time}, ${notes})
+      VALUES (${userId}, ${service_id}, ${booking_date}, ${start_time}, ${notes})
       RETURNING *
     `;
     
@@ -84,4 +114,4 @@ export const POST = withAuth(async (request) => {
     console.error('Error creating booking:', error);
     return Response.json({ error: 'Failed to create booking' }, { status: 500 });
   }
-});
+};
