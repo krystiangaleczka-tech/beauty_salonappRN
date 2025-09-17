@@ -17,6 +17,19 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 async function startServer() {
   const app = express();
 
+  // Add CORS headers
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', '*'); // Allow all headers
+    
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+
   // Comment out proxy for now - let Vite handle API routes directly
   // app.use(
   //   '/api',

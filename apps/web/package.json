@@ -4,7 +4,11 @@
 	"type": "module",
 	"scripts": {
 		"dev": "node server.js",
-		"typecheck": "react-router typegen && tsc --noEmit"
+		"typecheck": "react-router typegen && tsc --noEmit",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:headed": "playwright test --headed",
+		"test:e2e:debug": "playwright test --debug"
 	},
 	"dependencies": {
 		"@auth/core": "^0.37.2",
@@ -75,6 +79,7 @@
 		"@babel/preset-typescript": "^7.27.1",
 		"@babel/traverse": "^7.27.1",
 		"@babel/types": "^7.27.1",
+		"@playwright/test": "^1.55.0",
 		"@react-router/dev": "^7.6.0",
 		"@tailwindcss/vite": "^4.1.4",
 		"@testing-library/jest-dom": "^6.6.4",

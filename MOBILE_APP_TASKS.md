@@ -82,13 +82,6 @@ This document tracks the development tasks specifically for the mobile app (Expo
 - 2.4.5.3 [ ] Add booking details display
 - 2.4.5.4 [ ] Implement booking cancellation
 
-#### 2.5 UI/UX Improvements
-##### 2.5.1 Services List Enhancement
-- 2.5.1.1 [ ] Enhance services list screen
-- 2.5.1.2 [x] Implement category filtering
-- 2.5.1.3 [ ] Add search functionality
-- 2.5.1.4 [ ] Improve card design
-- 2.5.1.5 [ ] Add animations for transitions
 
 ##### 2.5.2 Performance Optimization
 - 2.5.2.1 [ ] Optimize performance

@@ -40,7 +40,10 @@ function guessBaseURL(): string | undefined {
  *   EXPO_PUBLIC_PROJECT_GROUP_ID
  */
 export const BASE_URL =
-  process.env.EXPO_PUBLIC_BASE_URL || 'http://192.168.100.55:3000';
+  process.env.EXPO_PUBLIC_BASE_URL || 
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+    ? 'http://172.20.10.2:3000' 
+    : guessBaseURL() || 'http://172.20.10.2:3000');
 
 export const PROXY_BASE_URL = process.env.EXPO_PUBLIC_PROXY_BASE_URL || '';
 

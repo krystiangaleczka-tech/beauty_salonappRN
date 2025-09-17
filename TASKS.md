@@ -12,10 +12,7 @@ Please read the [Task Tracking README](TASK_TRACKING_README.md) for instructions
 
 ## Current Priorities
 
-1. **Mobile App Payment Integration**
-   - Implement payment processing for booking flow
-   - Add payment method selection UI
-   - Create payment confirmation screens
+
 
 2. **Booking Flow Completion**
    - Implement booking confirmation functionality

@@ -1,4 +1,4 @@
-ALWAYS PROVIDE CLEAN SHORT CODE AND USE MCP WHEN POSSIBLE
+ALWAYS PROVIDE CLEAN SHORT SIMPLE CODE AND USE MCP WHEN POSSIBLE
 
 Guidelines for organizing and tracking project progress using markdown task lists. Follow these guidelines:
 

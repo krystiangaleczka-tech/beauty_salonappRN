@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   useColorScheme,
   TextInput,
-  Animated,
   FlatList,
 } from "react-native";
 import { Image } from "expo-image";
@@ -30,10 +29,6 @@ export default function ServicesScreen() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -47,22 +42,23 @@ export default function ServicesScreen() {
   const { data: servicesData, isLoading, error } = useQuery({
     queryKey: ["services", selectedCategory],
     queryFn: async () => {
-      console.log("QueryFn started");
+      console.log("=== QUERY START ===");
+      console.log("Selected category:", selectedCategory);
+      console.log("BASE_URL:", BASE_URL);
+      console.log("Window hostname:", typeof window !== 'undefined' ? window.location.hostname : 'undefined');
+      
       try {
         const url = selectedCategory === "All" 
           ? `${BASE_URL}/api/services` 
           : `${BASE_URL}/api/services?category=${encodeURIComponent(selectedCategory)}`;
         console.log("Fetching from URL:", url);
-        console.log("BASE_URL:", BASE_URL);
-        console.log("Network state:", navigator ? navigator.onLine : "Unknown");
         
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
-          // Add timeout to detect connection issues
-          signal: AbortSignal.timeout(10000) // 10 seconds timeout
         });
         console.log("Response status:", response.status);
         console.log("Response ok:", response.ok);
@@ -70,36 +66,26 @@ export default function ServicesScreen() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Response error text:", errorText);
-          throw new Error(`Failed to fetch services: ${response.status} ${response.statusText}`);
+          throw new Error(`Failed to fetch services: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
         console.log("Services data received:", data);
         console.log("Services count:", data?.services?.length || 0);
+        console.log("=== QUERY SUCCESS ===");
         return data;
       } catch (fetchError) {
-        console.error("Fetch error details:", fetchError);
-        console.error("Error message:", fetchError.message);
-        console.error("Error stack:", fetchError.stack);
-        console.error("Error type:", fetchError.name);
-        
-        // Add specific handling for network errors
-        if (fetchError.name === 'AbortError') {
-          console.error("Request timed out - possible network issue");
-        } else if (fetchError.name === 'TypeError' && fetchError.message.includes('Network request failed')) {
-          console.error("Network request failed - likely incorrect BASE_URL or server not reachable");
-        }
-        
+        console.error("=== QUERY ERROR ===");
+        console.error("Error name:", fetchError?.name);
+        console.error("Error message:", fetchError?.message);
+        console.error("Error stack:", fetchError?.stack);
+        console.error("=== QUERY ERROR END ===");
         throw fetchError;
       }
     },
-    retry: false,
+    retry: 1,
+    retryDelay: 1000,
   });
-
-  if (error) {
-    console.error("Query error:", error);
-    console.error("Error details:", JSON.stringify(error, null, 2));
-  }
 
   // Extract unique categories and add "All" as first option
   const categories = useMemo(() => {
@@ -121,89 +107,33 @@ export default function ServicesScreen() {
     );
   }, [servicesData, searchQuery]);
 
-  // Memoize handlers to prevent unnecessary re-renders
-  const handleCategorySelect = useCallback((category) => {
-    setSelectedCategory(category);
-  }, []);
-
-  const handleSearchChange = useCallback((text) => {
-    setSearchQuery(text);
-  }, []);
-
-  const handleSearchFocus = useCallback(() => {
-    setIsSearchFocused(true);
-  }, []);
-
-  const handleSearchBlur = useCallback(() => {
-    setIsSearchFocused(false);
-  }, []);
-
   if (!fontsLoaded) {
     return null;
   }
 
-  // Animation effect - only run once on mount
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []); // Empty dependency array means this runs only once on mount
-
-  // Memoized key extractor for FlatList
-  const keyExtractor = useCallback((item) => `service-${item.id}`, []);
-
-  const handleScroll = (event) => {
-    const scrollY = event.nativeEvent.contentOffset.y;
-    setShowHeaderBorder(scrollY > 0);
-  };
-
-  const handleServiceSelect = useCallback((service) => {
-    router.push(
-      `/book-service?service_id=${service.id}&service_name=${encodeURIComponent(service.name)}`,
-    );
-  }, [router]);
-
-  const clearSearch = useCallback(() => {
-    setSearchQuery("");
-  }, []);
-
   const renderServiceCard = (service, index) => {
-    // Calculate animation delay based on index
-    const animationDelay = index * 50;
-    
     return (
-      <Animated.View
+      <View
         key={service.id}
         style={{
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-          // Add delay for staggered animation
-          animationDelay: `${animationDelay}ms`,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          padding: 20,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: "#F4E6D7",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 3,
         }}
       >
         <TouchableOpacity
-          onPress={() => handleServiceSelect(service)}
-          style={{
-            backgroundColor: "#FFFFFF", // white background
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: "#F4E6D7", // light beige border
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 3,
+          onPress={() => {
+            router.push(
+              `/book-service?service_id=${service.id}&service_name=${encodeURIComponent(service.name)}`,
+            );
           }}
           activeOpacity={0.8}
         >
@@ -313,95 +243,35 @@ export default function ServicesScreen() {
             </View>
           </View>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     );
   };
 
-  // Render error state
-  const renderErrorState = () => {
-    const isNetworkError = error?.name === 'TypeError' && error?.message?.includes('Network request failed');
-    const isTimeoutError = error?.name === 'AbortError';
-    
-    return (
-      <ScrollView
-        contentContainerStyle={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          paddingVertical: 60,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            backgroundColor: "#FFFFFF",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 24,
-            borderWidth: 1,
-            borderColor: "#F4E6D7",
-          }}
-        >
-          {isNetworkError || isTimeoutError ? (
-            <WifiOff size={32} color="#E91E63" />
-          ) : (
-            <AlertCircle size={32} color="#E91E63" />
-          )}
-        </View>
+  const keyExtractor = (item) => `service-${item.id}`;
 
-        <Text
-          style={{
-            fontSize: 20,
-            fontFamily: "Inter_600SemiBold",
-            color: "#5D4E37",
-            marginBottom: 8,
-            textAlign: "center",
-          }}
-        >
-          {isNetworkError || isTimeoutError ? "Connection Error" : "Error Loading Services"}
-        </Text>
+  const handleScroll = (event) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    setShowHeaderBorder(scrollY > 0);
+  };
 
-        <Text
-          style={{
-            fontSize: 16,
-            fontFamily: "Inter_400Regular",
-            color: "#8B7355",
-            textAlign: "center",
-            lineHeight: 24,
-            paddingHorizontal: 40,
-            marginBottom: 24,
-          }}
-        >
-          {isNetworkError || isTimeoutError
-            ? "Unable to connect to the server. Please check your internet connection and try again."
-            : "An error occurred while loading services. Please try again later."
-          }
-        </Text>
-        
-        <TouchableOpacity
-          onPress={() => window.location.reload()}
-          style={{
-            backgroundColor: "#E91E63",
-            borderRadius: 12,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: "Inter_600SemiBold",
-              color: "#FFFFFF",
-            }}
-          >
-            Try Again
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    setIsSearchFocused(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   return (
@@ -534,7 +404,57 @@ export default function ServicesScreen() {
           </View>
         ) : error ? (
           // Error state
-          renderErrorState()
+          <ScrollView
+            contentContainerStyle={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingVertical: 60,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: "#FFFFFF",
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 24,
+                borderWidth: 1,
+                borderColor: "#F4E6D7",
+              }}
+            >
+              <AlertCircle size={32} color="#E91E63" />
+            </View>
+
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: "Inter_600SemiBold",
+                color: "#5D4E37",
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
+              Error Loading Services
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: "Inter_400Regular",
+                color: "#8B7355",
+                textAlign: "center",
+                lineHeight: 24,
+                paddingHorizontal: 40,
+                marginBottom: 24,
+              }}
+            >
+              An error occurred while loading services. Please try again later.
+            </Text>
+          </ScrollView>
         ) : filteredServices.length > 0 ? (
           <FlatList
             data={filteredServices}
@@ -548,14 +468,10 @@ export default function ServicesScreen() {
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={16}
-            // Performance optimizations
             initialNumToRender={6}
             maxToRenderPerBatch={10}
             windowSize={10}
             removeClippedSubviews={true}
-            // Enable this on Android for better performance
-            // Note: This may cause issues with some animations
-            // disableVirtualization={Platform.OS === 'android'}
           />
         ) : (
           // Empty state
