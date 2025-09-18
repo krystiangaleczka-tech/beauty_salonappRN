@@ -115,7 +115,7 @@ beauty_salonappRN/
    npm install
    HOST=0.0.0.0 npm run dev
    ```
-   - Aplikacja dostępna na: http://localhost:3000
+   - Aplikacja dostępna na: http://192.168.100.55:3000
    - API dostępne na: http://localhost:4000 (przez proxy `/api`)
 
 ***

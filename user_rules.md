@@ -1,6 +1,13 @@
-ALWAYS PROVIDE CLEAN SHORT SIMPLE CODE AND USE MCP WHEN POSSIBLE
+## FOLLOW THESE RULES 
+- ALWAYS PROVIDE CLEAN SHORT SIMPLE CODE
+- USE MCP WHEN YOU ARE LOOPING AND UNSURE ABOUT IMPLEMENTING NEW FEATURE
+- PLAN EVERY EDGE CASE WHEN ARCHITECTING ANY PLAN
+- DO NOT OVERCOMPLICATE TASKS
+- ALWAYS MAINTAIN A PLANING MARKDOWN FILE IN ORDER TO KEEP TRACK OF YOUR PROGRESS AND PLANNING
+- ALWAYS KEEP AN EYE ON THE LINTER AND TERMINAL FOR ERRORS.
 
-Guidelines for organizing and tracking project progress using markdown task lists. Follow these guidelines:
+
+## Guidelines for organizing and tracking project progress using markdown task lists. Follow these guidelines:
 
 Best Practices:
 - Use GitHub-flavored markdown checkbox syntax for tasks: `- [ ] Task description` (uncompleted) and `- [x] Task description` (completed)

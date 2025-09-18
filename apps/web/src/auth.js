@@ -19,6 +19,18 @@ const result = CreateAuth({
 					type: 'password',
 				},
 			},
+			async authorize(credentials) {
+				// Add your authentication logic here
+				if (credentials.email === 'admin' && credentials.password === 'admin') {
+					return {
+						id: '1',
+						email: 'admin',
+						name: 'Admin User',
+						isAdmin: true,
+					};
+				}
+				return null;
+			},
 		}),
 	],
 	pages: {
