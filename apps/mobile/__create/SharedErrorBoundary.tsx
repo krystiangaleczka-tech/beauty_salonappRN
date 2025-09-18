@@ -32,7 +32,6 @@ export function SharedErrorBoundary({
 
   return (
     <Animated.View
-      pointerEvents={isOpen ? 'auto' : 'none'}
       style={{
         position: 'absolute',
         bottom: 34,
@@ -46,6 +45,7 @@ export function SharedErrorBoundary({
         justifyContent: 'center',
         left: '5%',
         width: '90%',
+        pointerEvents: isOpen ? 'auto' : 'none',
       }}
     >
       <View
