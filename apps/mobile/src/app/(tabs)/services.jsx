@@ -122,10 +122,7 @@ export default function ServicesScreen() {
           marginBottom: 16,
           borderWidth: 1,
           borderColor: "#F4E6D7",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
           elevation: 3,
         }}
       >

@@ -132,14 +132,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
-    // Add shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -3,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    // Add shadow for web
+    boxShadow: '0 -3px 5px rgba(0, 0, 0, 0.1)',
     // Add elevation for Android
     elevation: 5,
   },

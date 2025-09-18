@@ -125,10 +125,7 @@ export default function HomeScreen() {
         borderWidth: 1,
         borderColor: "#F4E6D7",
         width: 280,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
         elevation: 2,
       }}
       activeOpacity={0.8}
@@ -306,10 +303,7 @@ export default function HomeScreen() {
         borderWidth: 1,
         borderColor: "#F4E6D7",
         width: 260,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
         elevation: 2,
       }}
       activeOpacity={0.8}
