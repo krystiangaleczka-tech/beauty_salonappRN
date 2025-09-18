@@ -126,7 +126,48 @@ export const PUT = withAuth(async (request, { params }) => {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
     
-    return Response.json({ booking: booking[0] });
+    const updatedBooking = booking[0];
+    
+    // Sync with Google Calendar
+    try {
+      const serviceInfo = await sql`
+        SELECT name, duration_minutes FROM services WHERE id = ${service_id}
+      `;
+      
+      const userInfo = await sql`
+        SELECT name, phone FROM users WHERE id = ${updatedBooking.user_id}
+      `;
+      
+      const calendarBooking = {
+        id: updatedBooking.id,
+        service_name: serviceInfo[0].name,
+        duration: serviceInfo[0].duration_minutes,
+        date: updatedBooking.booking_date,
+        time: updatedBooking.start_time,
+        client_name: userInfo[0].name,
+        client_phone: userInfo[0].phone || '',
+        location: 'Beauty Salon'
+      };
+      
+      const calendarResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/google-calendar/events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(calendarBooking),
+      });
+      
+      if (calendarResponse.ok) {
+        const calendarData = await calendarResponse.json();
+        console.log('Calendar event updated:', calendarData.event.id);
+      } else {
+        console.error('Failed to update calendar event');
+      }
+    } catch (calendarError) {
+      console.error('Calendar sync error:', calendarError);
+    }
+    
+    return Response.json({ booking: updatedBooking });
   } catch (error) {
     console.error('Error updating booking:', error);
     return Response.json({ error: 'Failed to update booking' }, { status: 500 });
@@ -165,10 +206,30 @@ export const DELETE = withAuth(async (request, { params }) => {
       RETURNING *
     `;
     
+    const cancelledBooking = booking[0];
+    
+    // Remove from Google Calendar
+    try {
+      const calendarResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/google-calendar/events/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (calendarResponse.ok) {
+        console.log('Calendar event deleted for booking:', id);
+      } else {
+        console.error('Failed to delete calendar event');
+      }
+    } catch (calendarError) {
+      console.error('Calendar sync error:', calendarError);
+    }
+    
     return Response.json({ 
       success: true, 
       message: 'Booking cancelled successfully',
-      booking: booking[0]
+      booking: cancelledBooking
     });
   } catch (error) {
     console.error('Error cancelling booking:', error);

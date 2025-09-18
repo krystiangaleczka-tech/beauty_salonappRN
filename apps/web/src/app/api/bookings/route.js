@@ -109,7 +109,44 @@ export const POST = async (request) => {
       RETURNING *
     `;
     
-    return Response.json({ booking: booking[0] });
+    const createdBooking = booking[0];
+    
+    // Sync with Google Calendar
+    try {
+      const serviceInfo = await sql`
+        SELECT name, duration_minutes FROM services WHERE id = ${service_id}
+      `;
+      
+      const calendarBooking = {
+        id: createdBooking.id,
+        service_name: serviceInfo[0].name,
+        duration: serviceInfo[0].duration_minutes,
+        date: createdBooking.booking_date,
+        time: createdBooking.start_time,
+        client_name: user_info?.name || 'Client',
+        client_phone: user_info?.phone || '',
+        location: 'Beauty Salon'
+      };
+      
+      const calendarResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/google-calendar/events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(calendarBooking),
+      });
+      
+      if (calendarResponse.ok) {
+        const calendarData = await calendarResponse.json();
+        console.log('Calendar event created:', calendarData.event.id);
+      } else {
+        console.error('Failed to create calendar event');
+      }
+    } catch (calendarError) {
+      console.error('Calendar sync error:', calendarError);
+    }
+    
+    return Response.json({ booking: createdBooking });
   } catch (error) {
     console.error('Error creating booking:', error);
     return Response.json({ error: 'Failed to create booking' }, { status: 500 });

@@ -1,3 +1,6 @@
+import { getGoogleCalendarClient } from '../utils/client.js';
+import { formatAvailabilityToCalendarEvents } from '../utils/event-formatter.js';
+
 export async function POST(request) {
   try {
     const { user_id, availability } = await request.json();
@@ -6,17 +9,10 @@ export async function POST(request) {
       return Response.json({ error: 'User ID and availability data are required' }, { status: 400 });
     }
 
-    // Google Calendar API integration would go here
-    // For now, we'll return a success response
-    // In a real implementation, you would:
-    // 1. Use the Google Calendar API to create/update calendar events
-    // 2. Set up working hours based on availability
-    // 3. Create blocked time slots for unavailable periods
-    
     const GOOGLE_CALENDAR_API_KEY = process.env.GOOGLE_CALENDAR_API_KEY;
     const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
-    if (!GOOGLE_CALENDAR_API_KEY || !GOOGLE_CALENDAR_ID) {
+    if (!GOOGLE_CALENDAR_API_KEY) {
       console.log('Google Calendar API credentials not configured');
       return Response.json({ 
         success: true, 
@@ -25,48 +21,39 @@ export async function POST(request) {
       });
     }
 
-    // Sample implementation for Google Calendar sync
-    // This would typically use the Google Calendar API
     try {
-      // Convert availability to Google Calendar format
-      const calendarEvents = availability
-        .filter(day => day.is_available)
-        .map(day => ({
-          summary: `Available for appointments`,
-          start: {
-            dateTime: `2024-01-01T${day.start_time}`,
-            timeZone: 'America/New_York',
-          },
-          end: {
-            dateTime: `2024-01-01T${day.end_time}`,
-            timeZone: 'America/New_York',
-          },
-          recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${getDayCode(day.day_of_week)}`],
-        }));
+      const calendar = getGoogleCalendarClient();
+      const calendarEvents = formatAvailabilityToCalendarEvents(availability);
 
-      // In a real implementation, you would make API calls to Google Calendar here
-      console.log('Would sync to Google Calendar:', calendarEvents);
+      // Create recurring events for each available day
+      const createdEvents = [];
+      for (const event of calendarEvents) {
+        const createdEvent = await calendar.events.insert({
+          calendarId: GOOGLE_CALENDAR_ID || 'primary',
+          resource: event,
+        });
+        createdEvents.push(createdEvent.data);
+      }
+
+      console.log(`Created ${createdEvents.length} availability events in Google Calendar`);
 
       return Response.json({ 
         success: true, 
         message: 'Availability synced with Google Calendar successfully',
-        synced: true 
+        synced: true,
+        events_created: createdEvents.length
       });
     } catch (calendarError) {
       console.error('Google Calendar sync error:', calendarError);
       return Response.json({ 
         success: true, 
         message: 'Availability saved locally, but Google Calendar sync failed',
-        synced: false 
+        synced: false,
+        error: calendarError.message
       });
     }
   } catch (error) {
     console.error('Error syncing with Google Calendar:', error);
     return Response.json({ error: 'Failed to sync with Google Calendar' }, { status: 500 });
   }
-}
-
-function getDayCode(dayOfWeek) {
-  const days = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-  return days[dayOfWeek];
 }
